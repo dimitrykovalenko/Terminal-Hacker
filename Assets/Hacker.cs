@@ -1,97 +1,148 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Hacker : MonoBehaviour {
 
-        // Game states
-        int level;
+    // Game configurations
+    string[] level1Passwords = { "domestic", "friend", "machine", "modern", "helpful" };
+    string[] level2Passwords = { "internet", "dangerous", "protected", "server", "penetration" };
+    string[] level3Passwords = { "perfection", "masterpeace", "inspiration", "precious", "security" };
 
-        enum Screen {Menu, Password, Win};
-        Screen currentScreen;
+    // Game states
+    int level;
 
-        string password;
+    enum Screen {Menu, Password, Win};
+    Screen currentScreen;
 
-        // Use this for initialization
-        void Start()
+    string password;
+
+    // Use this for initialization
+    void Start()
+    {
+        ShowMainMenu();
+    }
+
+	// This opens a menu in the Terminal
+	void ShowMainMenu()
+    {
+        currentScreen = Screen.Menu;
+        Terminal.ClearScreen();
+        Terminal.WriteLine("Select your hacking area:");
+        Terminal.WriteLine("Press 1 for domestic robot");
+        Terminal.WriteLine("Press 2 for military AI");
+        Terminal.WriteLine("Press 3 for museum vault");
+        Terminal.WriteLine("Decypher the password to break through firewall.");
+    }
+
+    // Screen login branching
+    void OnUserInput (string input)
+    {
+        if (input == "menu")
         {
             ShowMainMenu();
         }
-
-        // This opens a menu in the Terminal
-        void ShowMainMenu()
+        else if (currentScreen == Screen.Menu)
         {
-            currentScreen = Screen.Menu;
-            Terminal.ClearScreen();
-            Terminal.WriteLine("Select your hacking target:");
-            Terminal.WriteLine("Press 1 for domestic robot");
-            Terminal.WriteLine("Press 2 for military AI");
-            Terminal.WriteLine("Decypher the password to break through firewall.");
+            RunMainMenu(input);
         }
-
-        // Screen login branching
-        void OnUserInput (string input)
+        else if (currentScreen == Screen.Password)
         {
-            if (input == "menu")
-            {
-                ShowMainMenu();
-            }
-            else if (currentScreen == Screen.Menu)
-            {
-                RunMainMenu(input);
-            }
-            else if (currentScreen == Screen.Password)
-            {
-                CheckPassword(input);  
-            }
+           CheckPassword(input);  
+        }
     }
 
+    // Display main menu screen
     void RunMainMenu (string input)
     {
-        if (input == "1")
+        bool isValidLevelNumber = (input == "1" || input == "2" || input == "3");
+        if (isValidLevelNumber)
         {
-            level = 1;
-            password = "cleaner";
-            StartGame();
-        }
-        else if (input == "2")
-        {
-            level = 2;
-            password = "sniper";
-            StartGame();
+            level = int.Parse(input);
+            AskForPassword();
         }
         else
         {
-            Terminal.WriteLine("Use 1 or 2 to select an option");
+            Terminal.WriteLine("Use 1-3 to select an option");
         }
     }
 
-    // Start game
-    void StartGame ()
+    // Ask user to guess the password from anagram
+    void AskForPassword ()
     {
         currentScreen = Screen.Password;
-        Terminal.WriteLine("You've choosen level " + level);
-        Terminal.WriteLine("Please enter your password:");
+        Terminal.ClearScreen();
+        GeneratePassword();
+        Terminal.WriteLine("Decypher the password: " + password.Anagram());
+        ShowMenuHint();
+
     }
+
+    // Choose random password from the collection
+    void GeneratePassword() 
+    {
+        switch (level)
+        {
+            case 1:
+                password = level1Passwords[Random.Range(0, level1Passwords.Length)];
+                break;
+            case 2:
+                password = level2Passwords[Random.Range(0, level2Passwords.Length)];
+                break;
+            case 3:
+                password = level3Passwords[Random.Range(0, level3Passwords.Length)];
+                break;
+            default:
+                Debug.LogError("Invalid level number");
+                break;
+        }
+    }
+
 
     // Handle password input 
     void CheckPassword (string input)
     {
         if (input == password)
         {
-            FinishGame();
+            DisplayWinScreen();
         }
         else
         {
-            Terminal.WriteLine("Wrong password. Try again");
+            AskForPassword();
         }
     }
 
-    // Finish game
-    void FinishGame ()
+    // Show win screen
+    void DisplayWinScreen ()
     {
         currentScreen = Screen.Win;
-        Terminal.WriteLine("Conratulations! Access granted");
-        Terminal.WriteLine("Type 'menu' for restart");
+        Terminal.ClearScreen();
+        ShowLevelReward();
+        ShowMenuHint();
     }
+
+    // Show level reward
+    void ShowLevelReward() 
+    {
+        switch (level)
+        {
+            case 1:
+                Terminal.WriteLine("Robot hacked and waiting for orders");
+                break;
+            case 2:
+                Terminal.WriteLine("Accessing AI core... Information extracted");
+                break;
+            case 3:
+                Terminal.WriteLine("Museum vault is open");
+                break;
+            default:
+                Debug.LogError("Invalid level reached");
+                break;
+        }        
+    }
+
+    // Hint user to type "menu" to exit curent screen
+    void ShowMenuHint()
+    {
+        Terminal.WriteLine("Type 'menu' to refresh");   
+    }
+
 }
